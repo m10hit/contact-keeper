@@ -1,15 +1,30 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import AlertContext from '../../context/alert/alertContext';
+import AuthContext from '../../context/auth/authContext';
 
-const Register = () => {
+const Register = (props) => {
   const alertContext = useContext(AlertContext);
+  const authContext = useContext(AuthContext);
   const { setAlert } = alertContext;
+  const { register, error, clearErrors, isAuthenticated } = authContext;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      props.history.push('/');
+    }
+    if (error === 'User already exists') {
+      setAlert(error, 'danger');
+      clearErrors();
+    }
+  }, [error, isAuthenticated, props.history]);
+
   const [user, setUser] = useState({
     name: '',
     email: '',
     password: '',
     password2: '',
   });
+  const { name, email, password, password2 } = user;
 
   const onChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -22,11 +37,10 @@ const Register = () => {
     } else if (password !== password2) {
       setAlert('Passwords do not match');
     } else {
-      console.log('Register Submit');
+      register({ name, email, password });
     }
   };
 
-  const { name, email, password, password2 } = user;
   return (
     <div className="form-container">
       <h1>
@@ -44,7 +58,7 @@ const Register = () => {
         <div>
           <label htmlFor="password">Password</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={password}
             onChange={onChange}
@@ -53,7 +67,7 @@ const Register = () => {
         <div>
           <label htmlFor="password2">Confirm Password</label>
           <input
-            type="text"
+            type="password"
             name="password2"
             value={password2}
             onChange={onChange}
